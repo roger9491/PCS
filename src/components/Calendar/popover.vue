@@ -14,13 +14,19 @@
           size="small"
           circle
         ></el-button>
+
+
+        <el-popconfirm title="這項任務確定刪除嗎?" @confirm="task_delete()">
         <el-button
-          @click="task_delete"
+          
           type="danger"
           icon="el-icon-delete"
           size="small"
           circle
+          slot="reference"
+          
         ></el-button>
+        </el-popconfirm>
       </div>
     </div>
     <div class="text-class">
@@ -35,6 +41,7 @@
   </div>
 </template>
 <script>
+import { request } from "../../network/request.js";
 export default {
   data() {
     return {
@@ -54,7 +61,28 @@ export default {
       console.log(this.inputtask)
     },
     task_delete(){
+      
+      console.log(this.inputtask)
+      request({
+        url: "/api/calendar",
+        method: "delete",
+        params:{id:this.inputtask["Id"]} ,
+        
+      })
+        .then((res) => {
+          if (res == "fail") {
+            console.log("fail");
+            return;
+          }
+          console.log(this.inputtask)
+          console.log("res", res);
+          this.$emit("task_delete",this.inputtask["Id"],this.inputtask["Date"]);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
 
+        
     }
  
   },

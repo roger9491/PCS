@@ -16,11 +16,12 @@
             :inputtop="popover_top"
             :inputtask="popover_task"
             @close="closepopover"
+            @task_delete="task_delete_popover"
           ></popover>
         </div>
       </transition>
 
-  <transition name="el-fade-in-linear">
+      <transition name="el-fade-in-linear">
         <div v-show="showlist" @click.stop>
           <dialog-bar
             @close="closelist"
@@ -32,7 +33,7 @@
 
       <h1>{{ today.year }} 年 {{ today.month }} 月</h1>
 
-      <div>
+      <div class="div_date_picker">
         <el-date-picker
           v-model="value2"
           type="month"
@@ -114,6 +115,7 @@ export default {
       showlist: false,
       showpopover: false,
       datavalue: "",
+      id: 0,
       list_index: 0,
       task_datavalue: {},
       popover_left: 0,
@@ -154,6 +156,7 @@ export default {
               };
             }
           }
+          console.log("created", this.task_datavalue);
         })
         .catch((err) => {
           console.log(err);
@@ -174,7 +177,7 @@ export default {
       let left = div.getBoundingClientRect().left;
       this.popover_left = left;
       this.popover_top = top;
-     
+    
       //The value passed into the popover
       for (var i in task) {
         if (task[i]["Title"] == title) {
@@ -182,7 +185,7 @@ export default {
             Date: data,
             Title: title,
             Content: task[i]["Content"],
-            Id: i
+            Id: i,
           };
           break;
         }
@@ -193,6 +196,10 @@ export default {
     },
     openlist() {
       this.showlist = true;
+    },
+    task_delete_popover(id, date) {
+      this.$delete(this.task_datavalue[date],[id]);   //Use this.$delete(array, index, value) to delete data responsively
+      this.showpopover = false;
     },
     closelist() {
       this.showlist = false;
@@ -219,31 +226,8 @@ export default {
     set_task(datavalue, form) {
       this.showlist = false;
       datavalue = String(datavalue);
-
-      if (
-        !Object.prototype.hasOwnProperty.call(this.task_datavalue, datavalue)
-      ) {
-        var id = this.$options.methods.setTask_toSQL(datavalue, form);
-        this.task_datavalue[datavalue] = {};
-        this.task_datavalue[datavalue][id] = {
-          Title: form.title,
-          Content: form.desc,
-        };
-      } else {
-        id = this.$options.methods.setTask_toSQL(datavalue, form);
-        this.task_datavalue[datavalue][id] = {
-          Title: form.title,
-          Content: form.desc,
-        };
-      }
-
-      this.list_index += 1;
-      // methods互相調用方法
-    },
-
-    setTask_toSQL(datavalue, form) {
       form = { Date: datavalue, Title: form.title, Content: form.desc };
-
+      var id;
       request({
         url: "/api/calendar",
         method: "post",
@@ -253,20 +237,52 @@ export default {
           if (res == "fail") {
             console.log("fail");
           }
-          console.log("res", res);
-          return res.data;
+          
+
+          id = res["data"];
+          if (
+            !Object.prototype.hasOwnProperty.call(
+              this.task_datavalue,
+              datavalue
+            )
+          ) {
+           
+            //Use vm.$set(array, index, value) to modify data content responsively
+            this.$set(this.task_datavalue, [datavalue], {});
+            this.task_datavalue[datavalue][id] = {
+              Title: form.Title,
+              Content: form.Content,
+            };
+           
+          } else {
+            this.$set(this.task_datavalue[datavalue], [id],{} );
+            this.task_datavalue[datavalue][id] = {
+              Title:  form.Title,
+              Content: form.Content,
+            };
+           
+          }
         })
         .catch((err) => {
           console.log(err);
         });
+
+      this.list_index += 1;
+      // methods互相調用方法
+    },
+
+    setTask_toSQL(datavalue, form) {
+      form = { Date: datavalue, Title: form.title, Content: form.desc };
     },
     checkdaytask(datavalue) {
+      
       if (
         Object.prototype.hasOwnProperty.call(this.task_datavalue, datavalue)
       ) {
+       
         return true;
       }
-
+       
       return false;
     },
     edit_task() {},
@@ -309,8 +325,8 @@ export default {
   watch: {
     value2: function () {
       var time = this.value2.split("-");
-      this.today.year = time[0]
-      this.today.month = time[1]
+      this.today.year = time[0];
+      this.today.month = time[1];
     },
   },
 };
@@ -396,5 +412,9 @@ export default {
 
 .el-popover {
   z-index: 900;
+}
+
+.div_date_picker {
+  cursor: pointer;
 }
 </style>
