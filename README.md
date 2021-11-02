@@ -2,7 +2,7 @@
 
 ## Project setup
 ```
-
+npm init
 npm install
 ```
 
