@@ -28,7 +28,7 @@
         <!-- 按鈕區域 -->
         <el-form-item class="btns">
           <el-button type="primary" @click="login">登陸</el-button>
-          <el-button type="info">重置</el-button>
+          <el-button type="info" @click="creatUser">新增帳密</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -45,24 +45,9 @@
       
       >
         <el-row :span="7" justify="center">
-          <el-col :span="5"
-            ><div class="menu-style" >
-              標題
-            </div></el-col
-          >
           <el-col :span="4"
             ><div class="menu-style">
-              <el-menu-item index="1" @click="taskmanagement">任務管理</el-menu-item>
-            </div></el-col
-          >
-          <el-col :span="4"
-            ><div class="menu-style">
-              <el-menu-item index="1"  @click="notebook">筆記本</el-menu-item>
-            </div></el-col
-          >
-          <el-col :span="4"
-            ><div class="menu-style">
-              <el-menu-item index="1"  @click="eazynote">隨手記</el-menu-item>
+              <el-menu-item index="1"  @click="eazynote">雲端上傳</el-menu-item>
             </div></el-col
           >
           <el-col :span="4"
@@ -110,7 +95,7 @@ export default {
   },
   created() {
     // Remember to switch back to "block"
-    this.selectdisplay.display = "none";
+    this.selectdisplay.display = "block";
   },
   methods: {
     login() {
@@ -124,8 +109,9 @@ export default {
             console.log("fail");
             return this.$message.error("帳號密碼錯誤");
           }
-          //token儲存到session
-          window.sessionStorage.setItem("token", res.data.token);
+          //token儲存到cookies
+          this.$cookies.set("Authorization", res.data["jwttoken"])
+          this.$cookies.set("UserId", res.data["userid"])
           this.selectdisplay.display = "none";
           this.$$router.push("/welcome")
         })
@@ -134,10 +120,36 @@ export default {
         });
     },
     logout() {
-      window.sessionStorage.clear();
+      this.$cookies.remove("Authorization")
       //路由跳轉
       this.$router.push("/home");
       this.selectdisplay.display = "block"
+    },
+    creatUser(){
+      request({
+        url: "/api/user",
+        method: "put",
+        data: this.loginForm,
+      })
+        .then((res) => {
+          if (res.data.Code == 400) {
+            console.log("fail");
+            return this.$message.error("無效帳密");
+          }
+          if (res.data == "-1") {
+            return this.$message.error("重複使用者");
+          }
+          //token儲存到cookies
+          console.log(res)
+          this.$cookies.set("Authorization", res.data["jwttoken"])
+          this.$cookies.set("UserId", res.data["userid"])
+
+          this.selectdisplay.display = "none";
+          this.$$router.push("/welcome")
+        })
+        .catch((err) => {
+          console.log(err);
+        });
     },
     toggkeCollapse() {
       this.isCollapse = !this.isCollapse;

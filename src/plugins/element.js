@@ -3,6 +3,7 @@ import "element-ui/lib/theme-chalk/index.css";
 import { Container,Aside,Menu,Submenu,MenuItem
 ,Form,FormItem,Input,Button,Message,Radio,RadioGroup,RadioButton,Row,Col,
 DatePicker,Table,TableColumn,Popover,Divider,Popconfirm,Tree} from "element-ui";
+import  VueCookies  from "vue-cookies";
 // fade/zoom 等
 import 'element-ui/lib/theme-chalk/base.css';
 // collapse 展开折叠
@@ -32,3 +33,4 @@ Vue.use(Divider);
 Vue.use(DatePicker);
 Vue.use(Popconfirm);
 Vue.use(Tree);
+Vue.use(VueCookies);

@@ -4,6 +4,7 @@
     ref="contentWrapper"
     :style="{ top: inputtop + 100 + 'px', left: inputleft - 200 + 'px' }"
   >
+
     <div class="close">
       <i class="el-icon-close" @click="close"></i>
       <div class="option">
@@ -32,17 +33,18 @@
     <div class="text-class">
       <div class="title-class">
         <i class="el-icon-star-on" style="color: blue"></i>
-        {{ inputtask["Title"] }}
+        {{ inputtask["title"] }}
       </div>
       <el-divider></el-divider>
-      <div>{{ inputtask["Date"] }}</div>
-      <div>{{ inputtask["Content"] }}</div>
+      <div>{{ inputtask["date"] }}</div>
+      <div>{{ inputtask["content"] }}</div>
     </div>
   </div>
 </template>
 <script>
 import { request } from "../../network/request.js";
 export default {
+
   data() {
     return {
     };
@@ -58,15 +60,14 @@ export default {
       this.$emit("close");
     },
     task_edit(){
-      console.log(this.inputtask)
+      this.$emit("task_edit");
     },
     task_delete(){
-      
-      console.log(this.inputtask)
+      console.log("inputtask",this.inputtask["id"])
       request({
         url: "/api/calendar",
         method: "delete",
-        params:{id:this.inputtask["Id"]} ,
+        params:{id:this.inputtask["id"]} ,
         
       })
         .then((res) => {
@@ -76,7 +77,7 @@ export default {
           }
           console.log(this.inputtask)
           console.log("res", res);
-          this.$emit("task_delete",this.inputtask["Id"],this.inputtask["Date"]);
+          this.$emit("task_delete",this.inputtask["id"],this.inputtask["date"]);
         })
         .catch((err) => {
           console.log(err);
